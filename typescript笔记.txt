@@ -1,0 +1,72 @@
+(1).Readonly、Partial、Pick、Record源码：
+type Person = {
+  name: string;
+  age: string;
+}
+// 只读
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+}
+
+// 类型T都是必须
+type Required<T> = {
+    [P in keyof T]-?: T[P];
+}
+
+// 将所有属性变成可选
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+}
+type person = Partial<Person>;
+person === {name?: string; age?: number}
+
+// 在T类型中查找[P in K]类型（获取原类型的子集）
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P];
+}
+type person = Pick<Person, "name" | "age">;
+person === {name: string; age: string}
+
+// 把K属性设置为T类型（将原类型当做新类型的成员）
+type Record<K extends string, T> = {
+    [P in K]: T;
+}
+type person = Record<'name' | 'age', string>
+person === {name: string; age: string}
+
+Exclude<T,U> 从 T 中排除那些可以赋值给 U 的类型：
+type T = Exclude<1|2|3|4|5, 3|4>  // T = 1|2|5 
+
+Extract<T,U> 从 T 中提取那些可以赋值给 U 的类型：
+type T = Extract<1|2|3|4|5, 3|4>  // T = 3|4
+
+Omit<T,K> 从对象 T 中排除 key 是 K 的属性（没有内置）由于 TS 中没有内置，所以需要我们使用 Pick 和 Exclude 进行实现：
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
+实例：
+interface Person {
+  name: string,
+  age: number,
+  sex: string,
+}
+let person: Omit<Person, 'name'> = {
+  age: 1,
+  sex: '男'
+}
+
+NonNullable <T> 排除 T 为 null 、undefined
+源码：type NonNullable<T> = T extends null | undefined ? never : T;
+实例：type T = NonNullable<string | string[] | null | undefined>; // string | string[]
+
+ReturnType<T> 获取函数 T 返回值的类型
+实例：type T1 = ReturnType<() => string>; // string
+
+(2).typeof用来推算类型，使用方法：
+const defaultState = {
+  a: 1,
+  b: '2'
+}
+type IState = typeof defaultState
+IState = { a: number; b: string; }
+
+(3).条件类型：
+T extends U ? X : Y   表示如果类型T可以被赋值给类型U，name结果就赋予X类型，否则赋予Y类型

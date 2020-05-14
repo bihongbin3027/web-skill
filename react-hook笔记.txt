@@ -1,0 +1,111 @@
+常用：
+
+1.setState：如果新的state需要通过使用先前的state计算得出，那么可以将函数传递给setState。
+<button onClick={() => setState(prevCount => prevCount + 1)}>+</button>
+
+2.在setState()函数中可以使用return {...prevState, ...updatedValues}展开运算符来达到合并更新对象的效果。
+
+3.惰性初始useState：initialState 参数只会在组件的初始渲染中起作用，后续渲染时会被忽略。如果初始 
+state 需要通过复杂计算获得，则可以传入一个函数，在函数中计算并返回初始的 state，此函数只在初始渲染时被调用。
+const [state, setState] = useState(() => {
+  const initialState = someExpensiveComputation(props);
+  return initialState;
+});
+
+4.惰性初始useReducer：将 init 函数作为 useReducer 的第三个参数传入，这样初始 state 将被设置为 init(initialArg)。
+function init(initialCount) {
+  return {count: initialCount};
+}
+useReducer(reducer, initialCount, init)
+
+5.useEffect 是处理副作用的，其执行时机在 每次 Render 渲染完毕后，换句话说就是每次渲染都会执行，只是实际在真实 DOM 操作完毕后。
+
+6.useCallback 做的事情，就是在其依赖变化时，返回一个新的函数引用。生成 Callback 的钩子。用于对不同 useEffect 中存在的相同逻辑的封装，减少代码冗余，配合 useEffect 使用
+
+7.useRef 的功能：通过 useRef 创建的对象，其值只有一份，而且在所有 Rerender 之间共享。我们对 count.current 赋值或读取，读到的永远是其最新值，而与渲染闭包无关。
+
+8.组件内部的每个函数（包括事件处理程序，效果，超时或其中的API调用）都会捕获定义它的渲染调用的道具和状态。
+
+9.对于 Function Component 的参数默认值，建议使用 React 内置方案解决，因为纯函数的方案不利于保持引用不变。
+const Child = ({ type }) => {
+  useEffect(() => {
+    console.log("type", type);
+  }, [type]);
+
+  return <div>Child</div>;
+};
+Child.defaultProps = {
+  type: { a: 1 }
+};
+
+10.技巧：组件可以返回一个数组，把参数返回给父组件，供父组件使用。
+function useModal() {
+  const [visible, changeVisible] = useState(false);
+
+  const toggleModalVisible = () => {
+    changeVisible(!visible);
+  };
+
+  return [(
+    <Modal
+      visible={visible}
+      onOk={toggleModalVisible}
+      onCancel={toggleModalVisible}
+    >
+      弹窗内容
+  	</Modal>
+  ), toggleModalVisible];
+}
+
+export default function HookDemo() {
+  const [modal, toggleModal] = useModal();
+  return (s
+    <div>
+      {modal}
+      <button onClick={toggleModal}>打开弹窗</button>
+    </div>
+  );
+}
+
+11.技巧：
+<MemoTestChild name={name} onClick={(newName: string) => setName(newName)} />
+<button onClick={onClick.bind(null,'新的子组件name')}>改变name</button>
+可以使用bind方法绑定父组件传过来的函数，在子组件把值传给父组件使用。
+
+12：性能优化：
+（1）父组件引入子组件，如果子组件不需要任何参数，可以用react.memo()包裹子组件，防止父组件更新，子组件也跟着更新优化。
+（2）如果子组件在传入值和函数的情况，传递给子组件的函数使用useCallback()，传递给子组件的对象使用useMemo()--(要记住的函数开销很大吗，
+返回的值是原始值（如字符串、数字、布尔值、空值、未定义或符号）吗？每次都思考这两个问题的话，你就能随时判断使用 useMemo 是否合适)优化。
+（3）不要只为了保持一致的引用就记忆一个值（useMemo(() => [1, 2, 3], [])），如果你需要根据更改的 prop 或值重新计算该值，那就请随意使用 useMemo Hook，
+否则可以使用useRef。const { current: abc} = useRef([1,2,3])代替。
+
+13.使用propTypes检查属性的时候，如果可选属性是两个字符串中的一个，可以这样使用：
+Scroll.propTypes = {
+  direction: PropTypes.oneOf(['vertical', 'horizental'])
+}
+
+14.useRef()搭配useImperativeHandle()可以把子组件的属性和方法暴露给父组件。
+
+15.// 生成0-9数字
+[...Array(10).keys()] ，keys() 方法用于从数组创建一个包含数组键的可迭代对象。
+
+16.数组去重，并且拿出重复对象
+for (let i = 0; i < newArr.length; i++) {
+   for (let j = i + 1; j < newArr.length;) {
+          if (newArr[i].userId === newArr[j].userId) {
+            // 拿出重复对象
+            removeArr.push(newArr[j])
+            // 删除重复对象，下次外部遍历newArr-1
+            newArr.splice(j, 1)
+          } else {
+            j++
+          }
+    }
+}
+
+17.使用immutable配合redux以后，不要在使用mapStateToProps映射给使用组件时使用toJS()，这会导致当你在组件里面依赖这个值时多次重复渲染。
+
+
+
+
+
