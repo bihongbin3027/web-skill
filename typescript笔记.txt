@@ -70,3 +70,27 @@ IState = { a: number; b: string; }
 
 (3).条件类型：
 T extends U ? X : Y   表示如果类型T可以被赋值给类型U，name结果就赋予X类型，否则赋予Y类型
+
+(4).{} vs object vs Object的区别：
+object 表示的是常规的 Javascript 对象类型，非基础数据类型
+
+declare function create(o: object): void;
+create({ prop: 0 }); // OK
+create(null); // Error
+create(undefined); // Error
+create(42); // Error
+create("string"); // Error
+create(false); // Error
+如果需要一个对象类型，但对对象的属性没有要求，使用 object。{} 和 Object 表示的范围太泛尽量不要使用
+
+{} 表示的非 null，非 undefined 的任意类型
+declare function create(o: {}): void;
+
+create({ prop: 0 }); // OK
+create(null); // Error
+create(undefined); // Error
+create(42); // OK
+create("string"); // OK
+create(false); // OK
+
+Object 和 {} 几乎一致，区别是 Object 类型会对 Object 原型内置的方法（toString/hasOwnPreperty）进行校验
