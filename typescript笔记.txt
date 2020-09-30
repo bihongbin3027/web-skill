@@ -94,3 +94,25 @@ create("string"); // OK
 create(false); // OK
 
 Object 和 {} 几乎一致，区别是 Object 类型会对 Object 原型内置的方法（toString/hasOwnPreperty）进行校验
+
+(5).extends关键字同样存在多种用途，在 interface 中表示类型扩展，在条件类型语句中表示布尔运算，在泛型中起到限制的作用
+// 表示类型扩展
+interface A {
+  a: string
+}
+
+interface B extends A { // { a: string, b: string }
+  b: string
+}
+
+// 条件类型中起到布尔运算的功能
+type Bar<T> = T extends string ? 'string' : never
+type C = Bar<number> // never
+type D = Bar<string> // string
+type E = Bar<'fooo'> // string
+
+// 起到类型限制的作用
+type Foo<T extends object> = T
+type F = Foo<number> // 类型“number”不满足约束“object”。
+type G = Foo<string> // 类型“string”不满足约束“object”。
+type H = Foo<{}> // OK
